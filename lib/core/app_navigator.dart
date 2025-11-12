@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wldd/features/developers/presentation/screens/home_screen.dart';
+import 'package:wldd/features/developers/presentation/screens/users_list_screen.dart';
+
+import '../features/developers/presentation/screens/developer_details_screen.dart';
+import '../features/developers/presentation/screens/web_view_screen.dart';
 
 
 class AppNavigator {
-  // Private constructor to prevent instantiation
   AppNavigator._();
 
   // NavigatorKeys
@@ -23,6 +25,28 @@ class AppNavigator {
         path: '/$homeScreen',
         name: homeScreen,
         builder: (context, state) => const HomeScreen(),
+      ),
+
+      GoRoute(
+        path: '/developerDetails',
+        name: 'developerDetails',
+        builder: (context, state) {
+          final params = state.extra as Map<String, dynamic>;
+          return DeveloperDetailsScreen(
+
+            name: params['name'] ?? '',
+
+
+          );
+        },
+      ),
+      GoRoute(
+        path: '/webview',
+        name: 'webview',
+        builder: (context, state) {
+          final url = state.extra as String;
+          return WebViewScreen(url: url);
+        },
       ),
 
     ],

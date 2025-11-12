@@ -1,20 +1,10 @@
-
-
-
-
-
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
 import '../../../../resourses/styles/colors_class.dart';
 import '../../../../resourses/styles/text_style_class.dart';
 import '../../../../resourses/widgets/app_text.dart';
 import '../../../../resourses/widgets/box.dart';
 
-
-
-/// Developer List Card for Home Screen
-/// Shows avatar, name, username, and bio
 class DeveloperListCard extends StatelessWidget {
   final String avatarUrl;
   final String name;
@@ -250,19 +240,3 @@ class DeveloperListCard extends StatelessWidget {
     );
   }
 }
-
-/// Example usage:
-//
-// DeveloperListCard(
-//   avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4',
-//   name: 'Tom Preston-Werner',
-//   username: 'mojombo',
-//   bio: 'Co-founder of GitHub, creator of Jekyll',
-//   isFavorite: false,
-//   onTap: () {
-//     // Navigate to detail screen
-//   },
-//   onFavoriteToggle: () {
-//     // Toggle favorite status
-//   },
-// )
