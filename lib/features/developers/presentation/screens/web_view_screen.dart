@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import '../../../../resourses/styles/colors_class.dart';
-import '../../../../resourses/styles/text_style_class.dart';
-import '../../../../resourses/widgets/app_text.dart';
+import '../../../../resources/styles/colors_class.dart';
+import '../../../../resources/styles/text_style_class.dart';
+import '../../../../resources/widgets/app_text.dart';
 
 class WebViewScreen extends StatefulWidget {
   final String url;

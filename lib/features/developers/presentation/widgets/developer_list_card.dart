@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../../resourses/styles/colors_class.dart';
-import '../../../../resourses/styles/text_style_class.dart';
-import '../../../../resourses/widgets/app_text.dart';
-import '../../../../resourses/widgets/box.dart';
+import '../../../../resources/styles/colors_class.dart';
+import '../../../../resources/styles/text_style_class.dart';
+import '../../../../resources/widgets/app_text.dart';
+import '../../../../resources/widgets/box.dart';
 
 class DeveloperListCard extends StatelessWidget {
   final String avatarUrl;

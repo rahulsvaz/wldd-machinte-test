@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:wldd/resourses/styles/colors_class.dart';
-import 'package:wldd/resourses/widgets/text_field_widget.dart';
+import 'package:wldd/resources/styles/colors_class.dart';
+import 'package:wldd/resources/widgets/text_field_widget.dart';
 
-import '../../../../resourses/widgets/sliver_height.dart';
+import '../../../../resources/widgets/sliver_height.dart';
 import '../bloc/user_bloc/users_bloc.dart';
 import '../bloc/user_bloc/users_event.dart';
 import '../bloc/user_bloc/users_state.dart';
