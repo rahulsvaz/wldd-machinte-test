@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-import '../style/colors_class.dart';
-import '../style/text_style_class.dart';
-import '../../core/api/api_support.dart';
+import 'colors_class.dart';
+
 
 class AppTextField extends StatefulWidget {
   final Color? bgColor;
@@ -200,8 +199,8 @@ class _AppTextFieldState extends State<AppTextField> {
         obscureText: widget.obscureText ? !_passwordVisible : false,
         enableSuggestions: !widget.obscureText,
         autocorrect: !widget.obscureText,
-        style: (widget.textStyle ?? Styles.textFieldStyle)
-            .copyWith(color: widget.textColor),
+        style: widget.textStyle
+           ,
         focusNode: widget.focusNode,
         maxLines: widget.expands ? null : (widget.maxLine ?? 1),
         maxLength: widget.maxLength,
@@ -227,8 +226,8 @@ class _AppTextFieldState extends State<AppTextField> {
           widget.maxLine == null ? widget.name ?? widget.label : widget.label,
           hintText: widget.hintText,
           counterText: widget.counterText ?? "",
-          hintStyle: widget.hintTextStyle ?? Styles.hintTextStyle,
-          labelStyle: widget.textStyle ?? Styles.labelTextStyle,
+          hintStyle: widget.hintTextStyle ,
+          labelStyle: widget.textStyle,
           border: widget.isBorderNeeded
               ? OutlineInputBorder(
             borderSide: BorderSide(
@@ -264,9 +263,8 @@ class _AppTextFieldState extends State<AppTextField> {
           floatingLabelBehavior:
           widget.floating ? FloatingLabelBehavior.always : null,
           prefixIcon: widget.prefixWidget,
-          prefixText: widget.isPrefixTextNeeded
-              ? ApiSupport.amountSymbol
-              : null,
+
+
           suffixIcon: _buildSuffixIcon(),
         ),
       ),

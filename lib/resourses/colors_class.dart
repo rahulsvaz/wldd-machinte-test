@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class Palette {
+
+
+
+
   static const Color kPrimary = Color(0xff083C5D);
   static const Color kSecondary = Color(0xff343a40);
   static const Color scaffoldBackground = Color(0xFF0F0F0F);
