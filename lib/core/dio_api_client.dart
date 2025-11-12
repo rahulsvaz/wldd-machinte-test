@@ -6,14 +6,12 @@ class DioApiClient {
   static final DioApiClient _instance = DioApiClient._internal();
   factory DioApiClient() => _instance;
 
-  final token = "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";
 
   final Dio _dio = Dio();
 
   DioApiClient._internal() {
 
     _dio.options.baseUrl = ApiSupport.baseUrl;
-    _dio.options.headers['Authorization'] = token;
 
     _dio.interceptors.add(
       InterceptorsWrapper(

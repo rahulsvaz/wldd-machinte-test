@@ -8,10 +8,13 @@ import 'package:wldd/core/hive_support.dart';
 import 'package:wldd/features/developers/model/offline_user_model.dart';
 import 'package:wldd/resources/styles/colors_class.dart';
 import 'package:wldd/resources/widgets/app_text.dart';
-import '../../../../resources/widgets/sliver_height.dart';
+import 'package:wldd/resources/widgets/text_field_widget.dart';
 import '../bloc/user_bloc/users_bloc.dart';
 import '../bloc/user_bloc/users_event.dart';
 import '../bloc/user_bloc/users_state.dart';
+import '../cubit/search_cubit.dart';
+import '../fav_cubit/favorite_state.dart';
+import '../fav_cubit/favorites_cubit.dart';
 import '../widgets/developer_list_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,15 +33,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadInitialData();
   }
 
+  /// Load data on start
   Future<void> _loadInitialData() async {
     final userBox = Hive.box<OfflineUserModel>(HiveSupport.userBoxName);
-
     if (userBox.isEmpty) {
       setState(() => _isOnline = true);
       context.read<UsersBloc>().add(GetUsersEvent());
     } else {
       setState(() => _isOnline = false);
     }
+
+    // Load favorites when app starts
+    context.read<FavoritesCubit>().loadFavorites();
   }
 
   @override
@@ -55,35 +61,45 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, state) {
         final isLoading = state.userStatus == UserStatus.loading;
 
-        return Scaffold(
-          backgroundColor: Palette.white,
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: RefreshIndicator(
-              backgroundColor: Palette.kPrimary,
-              color: Palette.white,
-              onRefresh: () async {
-                setState(() => _isOnline = true);
-                context.read<UsersBloc>().add(GetUsersEvent());
-              },
-              child: CustomScrollView(
-                slivers: [
-                  SliverAppBar(
-                    floating: true,
-                    backgroundColor: Palette.white,
-                    pinned: false,
-                    title: AppText(
-                      "Developers",
-                      color: Palette.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SliverH20(),
+        return BlocBuilder<SearchCubit, SearchState>(
+          builder: (context, searchState) {
+            final onlineList = searchState.query.isEmpty
+                ? state.usersList
+                : searchState.filteredOnlineUsers;
 
-                  // 🟢 Banner
-                  SliverToBoxAdapter(
-                    child: Container(
+            final offlineList = searchState.query.isEmpty
+                ? offlineUsers
+                : searchState.filteredOfflineUsers;
+
+            return Scaffold(
+              backgroundColor: Palette.white,
+              appBar: AppBar(
+                elevation: 0,
+                backgroundColor: Palette.white,
+                title: AppTextField(
+                  borderRadius: 12,
+                  hintText: 'Search developers...',
+                  prefixWidget:
+                  const Icon(Icons.search, color: Colors.grey, size: 20),
+                  onChanged: (query) {
+                    if (_isOnline) {
+                      context
+                          .read<SearchCubit>()
+                          .searchOnline(query, state.usersList);
+                    } else {
+                      context
+                          .read<SearchCubit>()
+                          .searchOffline(query, offlineUsers);
+                    }
+                  },
+                ),
+              ),
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    // 🟢 Status Banner
+                    Container(
                       margin: const EdgeInsets.only(top: 10, bottom: 10),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
@@ -116,101 +132,123 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                  ),
 
-                  // 🟠 OFFLINE LIST
-                  if (!_isOnline && offlineUsers.isNotEmpty) ...[
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                          final user = offlineUsers[index];
-                          return DeveloperListCard(
-                            avatarUrl: user.imageUrl,
-                            name: user.name,
-                            username: user.name,
-                            bio: user.url,
-                            isFavorite: false,
-                            onTap: () {
-                              context.pushNamed(
-                                'developerDetails',
-                                extra: {'name': user.name},
-                              );
-                            },
-                            onFavoriteToggle: () {
-                              log("Fav toggled for offline user: ${user.name}");
-                            },
-                          );
+                    Expanded(
+                      child: RefreshIndicator(
+                        backgroundColor: Palette.kPrimary,
+                        color: Palette.white,
+                        onRefresh: () async {
+                          setState(() => _isOnline = true);
+                          context.read<UsersBloc>().add(GetUsersEvent());
+                          await context.read<FavoritesCubit>().loadFavorites();
                         },
-                        childCount: offlineUsers.length,
+                        child: BlocBuilder<FavoritesCubit, FavoritesState>(
+                          builder: (context, favState) {
+                            final favCubit = context.read<FavoritesCubit>();
+
+                            return CustomScrollView(
+                              slivers: [
+                                if (!_isOnline && offlineList.isNotEmpty)
+                                  SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                          (context, index) {
+                                        final user = offlineList[index];
+                                        final userId = user.id.toString();
+
+                                        return DeveloperListCard(
+                                          avatarUrl: user.imageUrl,
+                                          name: user.name,
+                                          username: user.name,
+                                          bio: user.url,
+                                          isFavorite:
+                                          favCubit.isFavorite(userId),
+                                          onTap: () {
+                                            context.pushNamed(
+                                              'developerDetails',
+                                              extra: {'name': user.name},
+                                            );
+                                          },
+                                          onFavoriteToggle: () async {
+                                            await favCubit
+                                                .toggleFavorite(userId);
+                                          },
+                                        );
+                                      },
+                                      childCount: offlineList.length,
+                                    ),
+                                  )
+                                else if (isLoading)
+                                  SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                          (context, index) => Skeletonizer(
+                                        enabled: true,
+                                        child: DeveloperListCard(
+                                          avatarUrl:
+                                          "https://avatars.githubusercontent.com/u/1?v=4",
+                                          name: "Loading...",
+                                          username: "loading",
+                                          bio: "loading...",
+                                          isFavorite: false,
+                                          onTap: () {},
+                                          onFavoriteToggle: () {},
+                                        ),
+                                      ),
+                                      childCount: 8,
+                                    ),
+                                  )
+                                else if (onlineList.isEmpty)
+                                    SliverToBoxAdapter(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(top: 100),
+                                        child: Center(
+                                          child: AppText(
+                                            "No developers found",
+                                            color: Palette.textMuted,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    SliverList(
+                                      delegate: SliverChildBuilderDelegate(
+                                            (context, index) {
+                                          final user = onlineList[index];
+                                          final userId = user.id.toString();
+
+                                          return DeveloperListCard(
+                                            avatarUrl: user.avatarUrl ??
+                                                "https://avatars.githubusercontent.com/u/1?v=4",
+                                            name: user.login ?? "",
+                                            username: user.login ?? "",
+                                            bio: user.htmlUrl ?? "",
+                                            isFavorite:
+                                            favCubit.isFavorite(userId),
+                                            onTap: () {
+                                              context.pushNamed(
+                                                'developerDetails',
+                                                extra: {'name': user.login},
+                                              );
+                                            },
+                                            onFavoriteToggle: () async {
+                                              await favCubit
+                                                  .toggleFavorite(userId);
+                                            },
+                                          );
+                                        },
+                                        childCount: onlineList.length,
+                                      ),
+                                    ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  ]
-
-                  // 🟢 ONLINE LIST (with Skeletonizer)
-                  else ...[
-                    if (isLoading)
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                            return Skeletonizer(
-                              enabled: true,
-                              child: DeveloperListCard(
-                                avatarUrl:
-                                "https://avatars.githubusercontent.com/u/1?v=4",
-                                name: "Loading...",
-                                username: "loading",
-                                bio: "loading...",
-                                isFavorite: false,
-                                onTap: () {},
-                              ),
-                            );
-                          },
-                          childCount: 8,
-                        ),
-                      )
-                    else if (state.usersList.isEmpty)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 100),
-                          child: Center(
-                            child: AppText(
-                              "No users found online",
-                              color: Palette.textMuted,
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                            final user = state.usersList[index];
-                            return DeveloperListCard(
-                              avatarUrl: user.avatarUrl ??
-                                  "https://avatars.githubusercontent.com/u/1?v=4",
-                              name: user.login ?? "",
-                              username: user.login ?? "",
-                              bio: user.htmlUrl ?? "",
-                              isFavorite: false,
-                              onTap: () {
-                                context.pushNamed(
-                                  'developerDetails',
-                                  extra: {'name': user.login},
-                                );
-                              },
-                              onFavoriteToggle: () {
-                                log("Fav toggled for online user: ${user.login}");
-                              },
-                            );
-                          },
-                          childCount: state.usersList.length,
-                        ),
-                      ),
                   ],
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
