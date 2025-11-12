@@ -4,20 +4,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:wldd/features/developers/presentation/bloc/user_repo_bloc/user_repo_bloc.dart';
+import 'package:wldd/features/developers/presentation/widgets/repo_tab.dart';
 import 'package:wldd/features/developers/repository/repository_repo_impl.dart';
 import '../../../../resources/styles/colors_class.dart';
 import '../../../../resources/styles/text_style_class.dart';
 import '../../../../resources/widgets/app_text.dart';
 import '../bloc/user_details_bloc/user_details_bloc.dart';
+import '../widgets/repo_list.dart';
 
 class DeveloperDetailsScreen extends StatefulWidget {
   final String name;
-
-  const DeveloperDetailsScreen({
-    super.key,
-    required this.name,
-  });
-
+  const DeveloperDetailsScreen({super.key, required this.name});
   @override
   State<DeveloperDetailsScreen> createState() => _DeveloperDetailsScreenState();
 }
@@ -44,7 +41,6 @@ class _DeveloperDetailsScreenState extends State<DeveloperDetailsScreen>
       child: BlocBuilder<UserDetailsBloc, UserDetailsState>(
         builder: (context, state) {
           final user = state.userDetails;
-
           return Skeletonizer(
             enabled: state.userDetailsStatus == UserDetailsStatus.loading,
             child: Scaffold(
@@ -66,58 +62,16 @@ class _DeveloperDetailsScreenState extends State<DeveloperDetailsScreen>
               body: Column(
                 children: [
                   const SizedBox(height: 20),
-
-                  // Avatar + user info
                   _buildProfileSection(user),
-
                   const SizedBox(height: 16),
-
-                  // Tab bar for repos
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Palette.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Palette.blue.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        gradient: const LinearGradient(
-                          colors: [Palette.blue, Palette.purpleLight],
-                        ),
-                      ),
-                      labelColor: Palette.white,
-                      unselectedLabelColor: Palette.textMuted,
-                      tabs: const [
-                        Tab(text: 'Public Repos'),
-                        Tab(text: 'Private Repos'),
-                      ],
-                    ),
-                  ),
-
+                RepoTab(controller:_tabController),
                   const SizedBox(height: 10),
-
-                  // Tab views
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        Ct(
-                          name: widget.name,
-                          isPrivate: false,
-                        ),
-                        Ct(
-                          name: widget.name,
-                          isPrivate: true,
-                        ),
+                        RepoList(name: widget.name, isPrivate: false),
+                        RepoList(name: widget.name, isPrivate: true),
                       ],
                     ),
                   ),
@@ -162,25 +116,20 @@ class _DeveloperDetailsScreenState extends State<DeveloperDetailsScreen>
           ),
         ),
         const SizedBox(height: 12),
-
         AppText(
           user?.name ?? "",
           style: Styles.roboto18Bold,
           color: Palette.textPrimary,
           textAlign: TextAlign.center,
         ),
-
         const SizedBox(height: 4),
-
         AppText(
           "@${widget.name}",
           style: Styles.roboto14,
           color: Palette.blue,
           textAlign: TextAlign.center,
         ),
-
         const SizedBox(height: 10),
-
         if (user?.location != null && user!.location!.isNotEmpty)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -195,9 +144,7 @@ class _DeveloperDetailsScreenState extends State<DeveloperDetailsScreen>
               ),
             ],
           ),
-
         const SizedBox(height: 16),
-
         if (user?.blog != null && user!.blog!.isNotEmpty)
           GestureDetector(
             onTap: () => _openWebView(context, user.blog!),
@@ -208,10 +155,7 @@ class _DeveloperDetailsScreenState extends State<DeveloperDetailsScreen>
               textAlign: TextAlign.center,
             ),
           ),
-
         const SizedBox(height: 24),
-
-        // Stats
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 20),
           padding: const EdgeInsets.all(16),
@@ -267,102 +211,3 @@ class _DeveloperDetailsScreenState extends State<DeveloperDetailsScreen>
   }
 }
 
-class Ct extends StatefulWidget {
-  final String name;
-  final bool isPrivate;
-  const Ct({super.key, required this.name, required this.isPrivate});
-
-  @override
-  State<Ct> createState() => _CtState();
-}
-
-class _CtState extends State<Ct> {
-  @override
-  void initState() {
-    context.read<UserRepoBloc>().add(GetUserRepoEvent(url: widget.name));
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<UserRepoBloc, UserRepoState>(
-      builder: (context, state) {
-        if (state.status == UserRepoStatus.loading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (state.status == UserRepoStatus.empty) {
-          return const Center(child: Text("No repositories found"));
-        }
-
-        final repoList = state.repoList
-            .where((repo) {
-          final isPrivate = repo.private ?? false;
-          return widget.isPrivate ? isPrivate : !isPrivate;
-        })
-            .toList();
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: repoList.length,
-          itemBuilder: (context, index) {
-            final repo = repoList[index];
-            return Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Palette.blueBaby.withOpacity(0.15),
-                    Palette.purpleLavender.withOpacity(0.1),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Palette.borderGrey.withOpacity(0.4)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Palette.blue.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    repo.name??"",
-                    style: Styles.roboto16Bold,
-                    color: Palette.textPrimary,
-                  ),
-                  const SizedBox(height: 4),
-                  if (repo.description != null && repo.description!.isNotEmpty)
-                    AppText(
-                      repo.description!,
-                      style: Styles.roboto12,
-                      color: Palette.textMuted,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, size: 16, color: Colors.amber),
-                      const SizedBox(width: 4),
-                      AppText(
-                        "${repo.stargazersCount}",
-                        style: Styles.roboto12,
-                        color: Palette.textPrimary,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
