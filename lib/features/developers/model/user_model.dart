@@ -1,15 +1,14 @@
-
-
-
 // To parse this JSON data, do
 //
 //     final userModel = userModelFromJson(jsonString);
 
 import 'dart:convert';
 
-List<UserModel> userModelFromJson(String str) => List<UserModel>.from(json.decode(str).map((x) => UserModel.fromJson(x)));
+List<UserModel> userModelFromJson(String str) =>
+    List<UserModel>.from(json.decode(str).map((x) => UserModel.fromJson(x)));
 
-String userModelToJson(List<UserModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String userModelToJson(List<UserModel> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class UserModel {
   final String? login;
@@ -99,23 +98,16 @@ class UserModel {
   };
 }
 
-enum Type {
-  ORGANIZATION,
-  USER
-}
+enum Type { ORGANIZATION, USER }
 
 final typeValues = EnumValues({
   "Organization": Type.ORGANIZATION,
-  "User": Type.USER
+  "User": Type.USER,
 });
 
-enum UserViewType {
-  PUBLIC
-}
+enum UserViewType { PUBLIC }
 
-final userViewTypeValues = EnumValues({
-  "public": UserViewType.PUBLIC
-});
+final userViewTypeValues = EnumValues({"public": UserViewType.PUBLIC});
 
 class EnumValues<T> {
   Map<String, T> map;
