@@ -37,6 +37,7 @@ dependencies:
   dio: ^5.9.0
   go_router: ^17.0.0
   intl: ^0.20.2
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:
@@ -61,8 +62,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/fonts/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -76,17 +77,22 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/roboto/RobotoCondensed-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/roboto/RobotoCondensed-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/roboto/RobotoCondensed-Light.ttf
+          weight: 300
+        - asset: assets/fonts/roboto/RobotoCondensed-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/roboto/RobotoCondensed-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/roboto/RobotoCondensed-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/roboto/RobotoCondensed-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/roboto/RobotoCondensed-ExtraBold.ttf
+          weight: 800

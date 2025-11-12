@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-import 'colors_class.dart';
+import '../styles/colors_class.dart';
 
 
 class AppTextField extends StatefulWidget {
